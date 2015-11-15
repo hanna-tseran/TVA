@@ -3,7 +3,7 @@ Using REST API
 
 // json responces types
 
-// VIDEO
+// VIDEO (Video files are stored in avi format)
 {    
     "name": "name",
     "tags": ["tag1", "tag2", ..., "tagn"],
