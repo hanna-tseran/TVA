@@ -1,29 +1,74 @@
 API for Tagged Video Archive project
 Using REST API
 
-Urls and methods:
-/videos              GET - returns the list of all videos; POST - add video
-/tags                GET - returns the list of all tags
-/videos/video_id     POST - add tags; POST - remove tags; GET - return video + tags; DELETE - delete video
-/tags/tag_name       GET - returns the list of all videos that have the selected tag
-/top_tags            GET - returns the list of the most popular tags (count is specified)
+// json responces types
 
-Some examples:
-POST /videos?source=some_source&tags=cats,fun,stupid+cat
-POST /videos/video_id?action=delete&tag=cats
-GET /top_tags?n=10
-DELETE /videos/video_id  
+// VIDEO
+{    
+    "name": "name",
+    "tags": ["tag1", "tag2", ..., "tagn"],
+    // if we have enough time to implement
+    "url": "url"
+}
 
-//////////////////////////////////
-/// Service logic (may be implemented for RPC, but wont't be):
-/// 
-/// list_of_videos GetAllVideos()
-/// error_status AddVideo(video, tags)
-/// list_of_tags GetAllTags()
-/// error_status AddTagsToVideo(video, tags)
-/// error_status RemoveTagsFromVideo(video, tags)
-/// list_of_tags GetVideoTags(video)
-/// error_status RemoveVideo(video)
-/// list_of_videos FindVideosByTag(tag)
-/// ordered_list_of_tags GetTopTags(n)
-//////////////////////////////////
+// LIST OF VIDEOS
+[ 
+    // exactly the same as VIDEO above
+    {
+        "name": "name",
+        "tags": ["tag1", "tag2", ..., "tagn"],
+        "url": "url"
+    },
+    ...,
+    {
+        "name": "name",
+        "tags": ["tag1", "tag2", ..., "tagn"],
+        "url": "url"
+    }
+]
+
+// LIST OF TAGS
+[
+    "tag1",
+    "tag2",
+    ...,
+    "tagn"
+]
+
+//////////////////////////////////////////////////////////////////////////////////////////////////////
+
+// get the list of all videos
+GET /videos
+json responce: LIST OF VIDEOS
+
+// add video
+POST /videos?source=source_path&tags=tag1,tag2,...,tagn
+only http status code
+
+// get the list of all tags
+GET /tags
+json responce: LIST OF TAGS
+
+// modify video tags
+PUT /videos/video_id/tags
+only http status code
+
+// get video tags
+GET /videos/video_id/tags
+json responce: LIST OF TAGS
+
+// get video
+GET /videos/video_id
+json responce: VIDEO
+
+// delete video
+DELETE /videos/video_id
+only http status code
+
+// get the list of all videos that have the selected tag
+GET /tags/tag_name
+json responce: LIST OF VIDEOS
+
+// get the list of the most popular tags (number is specified)
+GET /top_tags?n=n
+json responce: LIST OF TAGS
