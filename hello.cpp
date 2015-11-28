@@ -1,4 +1,5 @@
 #include <iostream>
+#include <string>
 #include "fcgio.h"
 using namespace std;
 
@@ -12,6 +13,8 @@ int main() {
     FCGX_Init();
     FCGX_InitRequest(&request, 0, 0);
 
+    int counter = 0;
+
     while (FCGX_Accept_r(&request) == 0) {
         fcgi_streambuf cin_fcgi_streambuf(request.in);
         fcgi_streambuf cout_fcgi_streambuf(request.out);
@@ -21,6 +24,9 @@ int main() {
         cout.rdbuf(&cout_fcgi_streambuf);
         cerr.rdbuf(&cerr_fcgi_streambuf);
 
+        string uri = FCGX_GetParam("REQUEST_URI", request.envp);
+        string method = FCGX_GetParam("REQUEST_METHOD", request.envp);
+
         cout << "Content-type: text/html\r\n"
              << "\r\n"
              << "<html>\n"
@@ -29,6 +35,9 @@ int main() {
              << "  </head>\n"
              << "  <body>\n"
              << "    <h1>Hello, World!</h1>\n"
+             << "    current counter = " << ++counter << "<p>\n"
+             << "    requested URL = " << uri << "<p>\n"
+             << "    requested METHOD = " << method << "\n"
              << "  </body>\n"
              << "</html>\n";
     }
