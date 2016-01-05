@@ -12,7 +12,7 @@
 ```
 {
     "name": "name",
-    "num": "num"
+    "count": "count"
 }
 ```
 
@@ -44,6 +44,13 @@
 ]
 ```
 
+**VIDEO ID**
+```
+{    
+  "_id": "id"
+}
+```
+
 ####Requests
 
 **Get the list of all videos**
@@ -56,7 +63,7 @@ json responce: LIST OF VIDEOS
 ```
 POST /videos
 data: source=source_path&tags=tag1,tag2,...,tagn
-responce: only http status code
+json responce: VIDEO ID
 ```
 
 **Add new video tags**
