@@ -19,6 +19,7 @@ public:
 	int InitDB();
 	string AddVideo(string name, vector<string> tags);
 	string AddVideoTags(string id, vector<string> tags);
+	void DeleteVideo(string id);
 	string GetVideo(string id);
 	string GetVideoTags(string id);
 	string GetVideosWithTags(vector<string> tags);

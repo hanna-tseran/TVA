@@ -23,6 +23,7 @@ enum RequestType {
     LIST_VIDEOS,
     ADD_VIDEO,
     ADD_VIDEO_TAGS,
+    DELETE_VIDEO,
     GET_VIDEO_TAGS,
     GET_VIDEO,
     GET_VIDEOS_WITH_TAGS,
@@ -46,6 +47,8 @@ RequestType GetRequestType(string path, string method) {
             }
         } else if (!method.compare("GET")){
             return GET_VIDEO;
+        } else if (!method.compare("DELETE")){
+            return DELETE_VIDEO;
         }
     }
     if (!path.compare("/tags") && !method.compare("GET")) {
@@ -165,6 +168,10 @@ int main() {
                 if (response.empty()) {
                     status = NOT_FOUND;
                 }
+                break;
+            case DELETE_VIDEO:
+                videoId = splittedPath[1];
+                tva.DeleteVideo(videoId);
                 break;
             case GET_VIDEO:
                 videoId = splittedPath[1];

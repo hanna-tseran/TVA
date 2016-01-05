@@ -1,0 +1,10 @@
+19 /videos/568babfc60894b88657da55f/tags
+tags=big,fluffy,dog
+20 /videos/568b87a9799c7916ba75fe44/tags
+tags=plane,beautiful
+22 /videos/568bac3660894b88657da564/tags
+tags=food,tasty,dinner
+16 /videos/568babfc60894b88657da560/tags
+tags=city,street
+18 /videos/568babfc60894b88657da562/tags
+tags=space,science

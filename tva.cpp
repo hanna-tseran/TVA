@@ -95,9 +95,7 @@ string TaggedVideoArchive::AddVideo(string name, vector<string> tags) {
 	}
 
 	BSONObj video = BSON(GENOID << "name" << name << "tags" << ConvertTagsToString(tagsMap));
-	// dbCnctn.remove(DB_VIDEOS_NAMESPACE, MONGO_QUERY("_id" << OID("568af24d3ae0cf035a3c2811")));
-	// important, uncomment!!!!
-	// dbCnctn.insert(DB_VIDEOS_NAMESPACE, video);
+	dbCnctn.insert(DB_VIDEOS_NAMESPACE, video);
 
 	BSONElement oi;
 	video.getObjectID(oi);
@@ -105,6 +103,10 @@ string TaggedVideoArchive::AddVideo(string name, vector<string> tags) {
 	Json::Value id;
 	id["_id"] = oid.toString();
 	return id.toStyledString();
+}
+
+void TaggedVideoArchive::DeleteVideo(string id) {
+	dbCnctn.remove(DB_VIDEOS_NAMESPACE, MONGO_QUERY("_id" << OID(id)));
 }
 
 string TaggedVideoArchive::AddVideoTags(string id, vector<string> tags) {

@@ -1,1 +1,1 @@
-curl -X PUT 127.0.0.1/videos/568b87a9799c7916ba75fe44/tags --data "tags=plane,sky,disaster"
+curl -X PUT 127.0.0.1/videos/568babfc60894b88657da55f/tags --data "tags=big,fluffy,dog"
