@@ -26,13 +26,11 @@
 ]
 ```
 
-**VIDEO** *(Video files are stored in avi format)*
+**VIDEO**
 ```
 {    
-  "name": "name",
-  "tags": LIST OF TAGS,
-  // if that's enough time to implement
-  "url": "url"
+  "name": "name", //can be used as uri
+  "tags": LIST OF TAGS
 }
 ```
 
@@ -56,13 +54,21 @@ json responce: LIST OF VIDEOS
 
 **Add video**
 ```
-POST /videos?source=source_path&tags=tag1,tag2,...,tagn
+POST /videos
+data: source=source_path&tags=tag1,tag2,...,tagn
 responce: only http status code
 ```
 
 **Add new video tags**
 ```
 PUT /videos/video_id/tags
+data: tags=tag1,tag2,...,tagn
+responce: only http status code
+```
+
+**Delete video**
+```
+DELETE /videos/video_id
 responce: only http status code
 ```
 
