@@ -1,4 +1,5 @@
 #include <iostream>
+#include <map>
 #include <string>
 #include "fcgio.h"
 #include "mongo/client/dbclient.h"
@@ -29,7 +30,7 @@ RequestType GetRequestType(string path, string method) {
         if (path.find("/tags") != string::npos) {
             if (!method.compare("GET")){
                 return GET_VIDEO_TAGS;
-            } else if (!method.compare("POST")){
+            } else if (!method.compare("PUT")){
                 return ADD_VIDEO_TAGS;
             }
         } else if (!method.compare("GET")){
@@ -82,22 +83,74 @@ string RemoveQuery(string uri) {
 //     return content;
 // }
 
-int InitMongo() {
-    mongo::client::initialize();
-    try {
-        mongo::DBClientConnection c;
-        c.connect("localhost");
-        cout << "connected ok" << endl;
-    } catch( const mongo::DBException &e ) {
-        cout << "caught " << e.what() << endl;
+// int InitMongo() {
+//     mongo::client::initialize();
+//     try {
+//         mongo::DBClientConnection c;
+//         c.connect("localhost");
+//         cout << "connected ok" << endl;
+//     } catch( const mongo::DBException &e ) {
+//         cout << "caught " << e.what() << endl;
+//     }
+//     return EXIT_SUCCESS;
+// }
+
+void GetKeyValue(string& param, string& key, string& value) {
+    std::stringstream ss(param);
+    if (getline(ss, key, '=')) {
+        getline(ss, value, '=');
     }
-    return EXIT_SUCCESS;
+}
+
+map<string, string> GetParameters(string query) {
+    map<string, string> res;
+    std::stringstream ss(query);
+    string item;
+    while (getline(ss, item, '&')) {
+        string key = "";
+        string value = "";
+        GetKeyValue(item, key, value);
+        res.insert(make_pair(key, value));
+    }
+    return res;
+}
+
+string ToString(map<string, string> params) {
+    string res;
+    for(map<string, string>::iterator it = params.begin(); it != params.end(); ++it) {
+        res += it->first + ": " + it->second + ", ";
+    }
+    return res;
+}
+
+vector<string> SplitTags(string tags) {
+    vector<string> tagsVec;
+    std::stringstream ss(tags);
+    string tag;
+    while (getline(ss, tag, ',')) {
+        tagsVec.push_back(tag);
+    }
+    return tagsVec;
+}
+
+vector<string> SplitPath(string path) {
+    vector<string> res;
+    std::stringstream ss(path);
+    string item;
+    while (getline(ss, item, '/')) {
+        if (item.size() > 0) {
+            res.push_back(item);
+        }
+    }
+    return res;
 }
 
 int main() {
-    int mRes = InitMongo();
-    if (mRes)
-        return mRes;
+    TaggedVideoArchive tva;
+    int initRes = tva.InitDB();
+    if (initRes) {
+        return initRes;
+    }
 
     streambuf * cin_streambuf  = cin.rdbuf();
     streambuf * cout_streambuf = cout.rdbuf();
@@ -122,27 +175,53 @@ int main() {
         string uri = FCGX_GetParam("REQUEST_URI", request.envp);
         string method = FCGX_GetParam("REQUEST_METHOD", request.envp);
         string query = FCGX_GetParam("QUERY_STRING", request.envp);
+        map<string, string> params = GetParameters(query);
+        string path = RemoveQuery(uri);
+        vector<string> splittedPath = SplitPath(path);
 
-        RequestType type = GetRequestType(RemoveQuery(uri), method);
+        RequestType type = GetRequestType(path, method);
 
+        string name = "new video.avi";
+        string tags = "cat,fluffy, tabby";
+        int errorCode = 200;
+        string videoId;
         switch(type) {
             case ADD_VIDEO:
-                cout << TaggedVideoArchive::AddVideo();
+                cout << "Content-type: application/json charset=UTF-8'\r\n\r\n";
+                cout << tva.AddVideo(name, SplitTags(tags));
+                // errorCode = tva.AddVideo(name, SplitTags(tags));
+                // if (errorCode == 200) {
+                //     break;
+                //     // cout << "Status: 200\r\n"
+                //     //     << "Content-type: text/html\r\n\r\n"
+                //     //     << "<html><body>OK</body></html>\n";
+                // } else {
+                //     cout << "Status: " << errorCode << "\r\n"
+                //         << "Content-type: text/html\r\n\r\n"
+                //         << "<html><body>Error</body></html>\n";
+                // }
                 break;
             case ADD_VIDEO_TAGS:
-                cout << TaggedVideoArchive::AddVideoTags();
+                videoId = splittedPath[1];
+                cout << "Content-type: application/json charset=UTF-8'\r\n\r\n";
+                cout << tva.AddVideoTags(videoId, SplitTags(tags));
                 break;
             case GET_VIDEO:
-                cout << TaggedVideoArchive::GetVideo();
+                videoId = splittedPath[1];
+                cout << "Content-type: application/json charset=UTF-8'\r\n\r\n";
+                cout << tva.GetVideo(videoId);
                 break;
             case GET_VIDEO_TAGS:
-                cout << TaggedVideoArchive::GetVideoTags();
+                videoId = splittedPath[1];
+                cout << "Content-type: application/json charset=UTF-8'\r\n\r\n";
+                cout << tva.GetVideoTags(videoId);
                 break;
             case GET_VIDEOS_WITH_TAGS:
-                cout << TaggedVideoArchive::GetVideosWithTags();
+                cout << tva.GetVideosWithTags();
                 break;
             case LIST_VIDEOS:
-                cout << TaggedVideoArchive::ListVideos();
+                cout << "Content-type: application/json charset=UTF-8'\r\n\r\n";
+                cout << tva.ListVideos();
                 break;
             case NO_REQUEST:
                 cout << "Content-type: text/html\r\n"
@@ -158,6 +237,7 @@ int main() {
                  << "    requested METHOD = " << method << "<p>\n"
                  << "    requested QUERY = " << query << "<p>\n"
                  << "    requested without QUERY = " << RemoveQuery(uri) << "<p>\n"
+                 << "    requested params = " << ToString(params) << "<p>\n"
                  << "    requested PATH_INFO = " << FCGX_GetParam("PATH_INFO", request.envp) << "<p>\n"
                  << "  </body>\n"
                  << "</html>\n";
