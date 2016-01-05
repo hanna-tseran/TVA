@@ -87,17 +87,6 @@ map<string, int> TagsAsMap(string tags) {
 	return tagsMap;
 }
 
-// string ConvertTagsToJson(map<string, int> tags) {
-// 	Json::Value tagsArray;
-// 	for(map<string, int>::iterator it = tags.begin(); it != tags.end(); ++it) {
-// 		Json::Value tag;
-// 		tag["name"] = it->first;
-// 		tag["count"] = it->second;
-// 		tagsArray.append(tag);
-// 	}
-// 	return tagsArray.toStyledString();
-// }
-
 string TaggedVideoArchive::AddVideo(string name, vector<string> tags) {
 	// add counts
 	map<string, int> tagsMap;
@@ -105,7 +94,6 @@ string TaggedVideoArchive::AddVideo(string name, vector<string> tags) {
 		tagsMap.insert(make_pair(tags[i], 1));
 	}
 
-	// insert
 	BSONObj video = BSON(GENOID << "name" << name << "tags" << ConvertTagsToString(tagsMap));
 	// dbCnctn.remove(DB_VIDEOS_NAMESPACE, MONGO_QUERY("_id" << OID("568af24d3ae0cf035a3c2811")));
 	// important, uncomment!!!!
@@ -117,7 +105,6 @@ string TaggedVideoArchive::AddVideo(string name, vector<string> tags) {
 	Json::Value id;
 	id["_id"] = oid.toString();
 	return id.toStyledString();
-	// return 200;
 }
 
 string TaggedVideoArchive::AddVideoTags(string id, vector<string> tags) {
@@ -137,7 +124,7 @@ string TaggedVideoArchive::AddVideoTags(string id, vector<string> tags) {
 		dbCnctn.update(DB_VIDEOS_NAMESPACE, BSON("_id" << OID(id)), BSON("$set" << BSON("tags" << ConvertTagsToString(tagsMap))));
 		return ConvertTagsToJson(ConvertTagsToString(tagsMap));
 	}
-    return "{ video-id: " + id + "}\n";
+    return "";
 }
 
 string TaggedVideoArchive::GetVideo(string id) {
@@ -151,7 +138,7 @@ string TaggedVideoArchive::GetVideo(string id) {
 		video["tags"] = ConvertTagsToJsonValue(item.getStringField("tags"));
 		return video.toStyledString();
 	}
-    return "{ video-id: " + id + "}\n";
+    return "";
 }
 
 string TaggedVideoArchive::GetVideoTags(string id) {
@@ -161,25 +148,32 @@ string TaggedVideoArchive::GetVideoTags(string id) {
 		BSONObj item = cursor->next();
 		return ConvertTagsToJson(item.getStringField("tags"));
 	}
-    return "{ video-id: " + id + "}\n";
+    return "";
 }
 
-string TaggedVideoArchive::GetVideosWithTags() {
-	string response;
-	response = "Content-type: text/html\r\n"
-        "\r\n"
-        "<html>\n"
-        "  <head>\n"
-        "    <title>Get videos with tags</title>\n"
-        "  </head>\n"
-        "  <body>\n"
-        "    <h1>Get videos with tags</h1>\n"
-         //"    current counter = "++counter"<p>\n"
-         //"    requested URL = "uri"<p>\n"
-         //"    requested METHOD = "method"\n"
-        "  </body>\n"
-        "</html>\n";
-    return response;
+string TaggedVideoArchive::GetVideosWithTags(vector<string> tags) {
+	Json::Value videoArray;
+	Json::Reader reader;
+
+	string tagsRegex = "";
+	for (int i = 0; i < tags.size(); ++i) {
+		if (i > 0) {
+			tagsRegex += "|";
+		}
+		tagsRegex += tags[i];
+	}
+	BSONObj query = BSONObjBuilder().appendRegex("tags", tagsRegex).obj(); 
+
+	auto_ptr<DBClientCursor> cursor = dbCnctn.query(DB_VIDEOS_NAMESPACE, query);
+	while (cursor->more()) {
+		BSONObj item = cursor->next();
+		Json::Value video;
+		reader.parse(item.jsonString(), video);
+		video["tags"] = ConvertTagsToJsonValue(item.getStringField("tags"));
+		videoArray.append(video);
+	}
+
+	return videoArray.toStyledString();
 }
 
 string TaggedVideoArchive::ListVideos() {
@@ -197,38 +191,3 @@ string TaggedVideoArchive::ListVideos() {
 
 	return videoArray.toStyledString();
 }
-
-// string TaggedVideoArchive::ListVideos() {
-// 	Json::Value root;
-// 	Json::Value videoArray;
-// 	Json::Reader reader;
-// 	// string response;
-// 	// response = "Content-type: text/html\r\n"
-//  //        "\r\n"
-//  //        "<html>\n"
-//  //        "  <head>\n"
-//  //        "    <title>Videos list</title>\n"
-//  //        "  </head>\n"
-//  //        "  <body>\n"
-//  //        "    <h1>Videos list</h1>\n";
-
-// 	auto_ptr<DBClientCursor> cursor = dbCnctn.query(DB_VIDEOS_NAMESPACE, BSONObj());
-// 	while (cursor->more()) {
-// 		BSONObj item = cursor->next();
-// 		BSONElement oi;
-// 		// item.getObjectID(oi);
-// 		// OID oid = oi.__oid();
-
-// 		Json::Value video;
-// 		reader.parse(item.jsonString(), video); 
-// 		videoArray.append(video);
-
-// 		// response += string("_id: ") + oid.toString() + "; ";
-// 		// response += "all info: " + item.jsonString() + "\n";
-// 	}
-
-// 	// response += "  </body>\n"
-//         // "</html>\n";
-//     root["videos"] = videoArray;
-//     return videoArray.toStyledString();//root.toStyledString();
-// }

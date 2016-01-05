@@ -21,6 +21,6 @@ public:
 	string AddVideoTags(string id, vector<string> tags);
 	string GetVideo(string id);
 	string GetVideoTags(string id);
-	string GetVideosWithTags();
+	string GetVideosWithTags(vector<string> tags);
 	string ListVideos();
 };
