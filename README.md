@@ -1,4 +1,11 @@
 ## Tagged Video Archive
+Service creating tagged database of videos which allows to:
+ - upload a video
+ - add tags to a video, tags added by different users get summed. Tags list looks like: tag1(amount), ..., tagN(amount)
+ - get a list of videos using tags, list is sorted by the amount of tags
+  
+*Same in Russian*
+
 Сервис преследует цель создания качественно тэгированной базы видео, для этого он позволяет:
  - загрузить видео
  - ставить видео тэги, при этом тэги, поставленные разными пользователями суммируются. Т.е. сисок тэгов для видео имеет вид: тэг1 (количество), ..., тэгN (количество)
